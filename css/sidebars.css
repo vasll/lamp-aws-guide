@@ -97,7 +97,7 @@
 #hide-sidebar-button{
   transition: 0.3s;
   background-color: #f9fafb;
-  border-radius: 20px;
+  border-radius: 8px;
   opacity: 55%
 }
 
