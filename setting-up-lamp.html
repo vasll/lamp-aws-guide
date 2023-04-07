@@ -6,7 +6,6 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-KK94CHFLLe+nY2dmCWGMq91rCGa5gtU4mk92HdvYe+M/SXH301p5ILy+dN9+nJOZ" crossorigin="anonymous">
     <title>2. LAMP configuration</title>
     <link rel="stylesheet" href="css/styles.css">
-    <link rel="stylesheet" href="css/sidebar-buttons.css">
     <link rel="stylesheet" href="css/sidebars.css">
 </head>
 
@@ -34,8 +33,8 @@
                         </button>
                         <div class="collapse show" id="aws-collapse">
                             <ul class="btn-toggle-nav list-unstyled fw-normal pb-1 small">
-                                <li><a href="#section-1.1" class="link-light rounded">1.1 Creating the instance</a></li>
-                                <li><a href="#section-1.2" class="link-light rounded">1.2 Running & connecting via SSH</a></li>
+                                <li><a href="setting-up-ec2.html#section-1.1" class="link-light rounded">1.1 Creating the instance</a></li>
+                                <li><a href="setting-up-ec2.html#section-1.2" class="link-light rounded">1.2 Connecting via SSH</a></li>
                             </ul>
                         </div>
                     </li>
@@ -45,9 +44,9 @@
                         </button>
                         <div class="collapse show" id="docker-collapse">
                             <ul class="btn-toggle-nav list-unstyled fw-normal pb-1 small">
-                                <li><a href="#" class="link-light rounded">2.1 System configuration</a></li>
-                                <li><a href="#" class="link-light rounded">2.2 Creating the SSL certificate</a></li>
-                                <li><a href="#" class="link-light rounded">2.3 Creating the docker containers</a></li>
+                                <li><a href="setting-up-lamp.html#section-2.1" class="link-light rounded">2.1 System configuration</a></li>
+                                <li><a href="setting-up-lamp.html#section-2.2" class="link-light rounded">2.2 Creating the SSL certificate</a></li>
+                                <li><a href="setting-up-lamp.html#section-2.3" class="link-light rounded">2.3 Creating the docker containers</a></li>
                             </ul>
                         </div>
                     </li>
@@ -59,12 +58,18 @@
         <!-- PAGE CONTENT -->
         <div class="page-content overflow-auto flex-fill text-light m-2">
             <h2>2. Setting up LAMP</h2><hr>
-            <h4 id="section-1.1">2.1 System configuration</h4>
-
+            <h4 id="section-2.1">2.1 System configuration</h4>
+            <p class="p-0 m-0 mb-1 mt-2">The first thing that should be always done when configuring a fresh linux install is to update 
+                the repository list with <code>apt update</code> and then install the new packages with <code>apt upgrade</code>, so go ahead and insert these commands
+                in your terminal. With it, we're also going to install docker.io
+            </p>
             <div class="code-snippet">
                 <p>sudo apt update</p>
                 <p>sudo apt upgrade</p>
+                <p>sudo apt install docker.io</p>
             </div>
+
+            <hr><h4 id="section-2.2">2.2 Creating the SSL certificate</h4>
 
         </div>
     </div>

@@ -20,6 +20,7 @@ html {
 
 .code-snippet{
     margin: 4px;
+    padding-left: 4px;
     font-family: 'Courier New', Courier, monospace;
     background: #00ffb386;
 }
