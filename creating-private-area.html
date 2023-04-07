@@ -6,6 +6,7 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-KK94CHFLLe+nY2dmCWGMq91rCGa5gtU4mk92HdvYe+M/SXH301p5ILy+dN9+nJOZ" crossorigin="anonymous">
     <title>1. EC2 configuration</title>
     <link rel="stylesheet" href="css/styles.css">
+	<link  rel="stylesheet" href="css/features.css">
     <link rel="stylesheet" href="css/sidebars.css">
 </head>
 
@@ -59,7 +60,9 @@
                         </button>
                         <div class="collapse show" id="private-collapse">
                             <ul class="btn-toggle-nav list-unstyled fw-normal pb-1 small">
-                                <li><a href="creating-private-area.html#section-3.1" class="link-light rounded">3.1 Preparing the DB</a></li>
+                                <li><a href="creating-private-area.html#section-3.1" class="link-light rounded">3.1 Inserting a user</a></li>
+                                <li><a href="creating-private-area.html#section-3.2" class="link-light rounded">3.2 Creating the API & login</a></li>
+                                <li><a href="creating-private-area.html#section-3.3" class="link-light rounded">3.3 Creating the private area</a></li>
                             </ul>
                         </div>
                     </li>
@@ -71,14 +74,183 @@
         <!-- PAGE CONTENT -->
         <div class="page-content overflow-auto flex-fill text-light m-2">
             <h2>3. Creating a private area</h2><hr>
-            <h4 id="section-1.1">3.1 Preparing the DB</h4>
+            <h4 id="section-3.1">3.1 Inserting a user</h4>
             <p class="p-0 m-0 mb-1 mt-2">To access the DB from phpmyadmin we need to find the password in the logs by using this command. You might need to scroll a bit before finding it</p>
-            <div class="code-snippet pb-1">
+            <div class="code-snippet">
                 <p>sudo docker logs lamp</p>
-                <img src="img/db/db-0.png" class="img-fluid" alt="">
             </div>
-            <!--TODO
-            create the users table-->
+            <img src="img/db/db-0.png" class="img-fluid ms-1" alt="">
+            <p class="p-0 m-0 mb-1 mt-2">Now go to <code>http://YOUR_EC2_PUBLIC_IP/phpmyadmin</code> and create the <code>users</code> table in the <code>main</code> database.
+            We are going to also create a <code>salt</code> field for added security, which is a random string of characters that will be added to the password hash</p>
+            <div class="file-snippet">
+                <div class="file-name">Query for creating users table</div>
+                <div class="file-content">
+                    CREATE TABLE users(<br>
+                    &nbsp;&nbsp;id INT PRIMARY KEY AUTO_INCREMENT NOT NULL,<br>
+                    &nbsp;&nbsp;nickname VARCHAR(32) NOT NULL UNIQUE,<br>
+                    &nbsp;&nbsp;password VARCHAR(256) NOT NULL,<br>
+                    &nbsp;&nbsp;salt CHAR(16) NOT NULL<br>
+                    );
+                </div>
+            </div>
+            <p class="p-0 m-0 mb-1 mt-2">
+                Now insert an user in the db via an SQL query. For generating the random salt you can either create a function inside 
+                your database or do it in PHP, the choice is yours
+            </p>
+            <div class="file-snippet">
+                <div class="file-name">Insert user with salt</div>
+                <div class="file-content">
+                    INSERT INTO users (nickname, password, salt)<br>
+                    VALUES ('coolusername', SHA2(CONCAT('a_complex_password', 'random_salt_here'), 256), 'random_salt_here');
+                </div>
+            </div>
+
+            
+            <hr></hr><h4 id="section-3.2">3.2 Creating the API & login</h4>
+            <p class="p-0 m-0 mb-1 mt-2">Our <code>~/app</code> directory only has an index.php file right now, let's make a new directory inside
+            called <code>~/app/api</code> where we'll place our php code</p>
+            <div class="code-snippet">
+                <p>cd ~/app</p>
+                <p>mkdir api</p>
+            </div>
+            <p class="p-0 m-0 mb-1 mt-2">Let's create a simple db_connection.php file that will handle our database connection.</p>
+            <div class="file-snippet">
+                <div class="file-name">File: ~/app/api/db_connection.php</div>
+                <div class="file-content">
+                    &lt?php<br>
+                    $ip = "localhost";<br>
+                    $db_name = "main";<br>
+                    $password = "";<br>
+                    $username = "root";<br>
+                    $connection = new mysqli($ip, $username, $password, $db_name);<br>
+                    $response = [];<br>
+                    if ($connection->connect_error) {<br>
+                    &nbsp;&nbsp;$response['message'] = 'Connection to db failed';<br>
+                    &nbsp;&nbsp;http_response_code(400);<br>
+                    &nbsp;&nbsp;echo json_encode($response);<br>
+                    &nbsp;&nbsp;die;<br>
+                    }<br>
+                    return $connection;<br>
+                    ?&gt
+                </div>
+            </div>
+            <p class="p-0 m-0 mb-1 mt-2">Then, make an <code>auth</code> directory inside <code>api</code> that will contain the authentication code</p>
+            <div class="code-snippet">
+                <p>cd ~/app/api</p>
+                <p>mkdir auth</p>
+            </div>
+            <p class="p-0 m-0 mb-1 mt-2">Create a <code>login.php</code> file that will handle the user login. We're going to use prepared statements for making the query for preventing 
+            an SQL injection</p>
+            <div class="file-snippet">
+                <div class="file-name">File: ~/app/api/auth/login.php</div>
+                <div class="file-content">
+                    &lt;?php<br>
+                        include('../db_connection.php');<br>
+                        $response = [];<br>
+                        session_start();<br><br>
+                        $nickname = mysqli_real_escape_string($connection, $_POST["nickname"]);<br>
+                        $pass = mysqli_real_escape_string($connection, $_POST["password"]);<br><br>
+                        $sql = "SELECT id, nickname FROM users <br>
+                        WHERE nickname = ? AND password = SHA2(CONCAT(?, (SELECT salt FROM users WHERE nickname = ?)), 256);";<br><br>
+                        $statement = $connection->prepare($sql);<br><br>
+                        $statement->bind_param("sss", $nickname, $pass, $nickname);<br>
+                        $query_response = [];<br>
+                        $statement->bind_result($query_response['id'], $query_response['nickname']);<br>
+                        $statement->execute();<br><br>
+                        if ($statement->fetch()){<br>
+                            &nbsp;&nbsp;$_SESSION['user_id'] = $query_response['id'];<br>
+                            &nbsp;&nbsp;$_SESSION['nickname'] = $query_response['nickname'];<br>
+                            &nbsp;&nbsp;$response['message'] = 'login successful';<br>
+                        }else{<br>
+                            &nbsp;&nbsp;http_response_code(400);<br>
+                            &nbsp;&nbsp;$response['message'] = 'login failed';<br>
+                        }<br>
+                        $statement->close();<br><br>
+                        echo json_encode($response);<br>
+                    ?&gt;
+                </div>
+            </div>
+            <p class="p-0 m-0 mb-1 mt-2">Inside <code>/auth</code> we're also going to place a <code>session_info.php</code> file that will return information about the current session</p>
+            <div class="file-snippet">
+                <div class="file-name">File: ~/app/api/auth/login.php</div>
+                <div class="file-content">
+                    &lt;?php<br>
+                    include('../db_connection.php');<br>
+                    $response = [];<br>
+                    session_start();<br><br>
+                    if(isset($_SESSION)){<br>
+                        &nbsp;&nbsp;$response['user_id'] = $_SESSION['user_id'];<br>
+                        &nbsp;&nbsp;$response['nickname'] = $_SESSION['nickname'];<br>
+                        &nbsp;&nbsp;$response['message'] = 'user is logged in';<br>
+                    }else{<br>
+                        &nbsp;&nbsp;http_response_code(400);<br>
+                        &nbsp;&nbsp;$response['message'] = 'user is not logged in';<br>
+                    }<br><br>
+                    echo json_encode($response);<br>
+                    ?&gt;
+                </div>
+            </div>
+            <p class="p-0 m-0 mb-1 mt-2">If we test the API <code>login.php</code> endpoint we can see that it is working</p>
+            <img src="img/db/db-1.png" class="img-fluid ms-1" alt="">
+
+
+            <hr><h4 id="section-3.3">3.3 Creating the private area</h4>
+			<p class="p-0 m-0 mb-1 mt-2">First, create a <code>protected.html</code> file in <code>~/app</code> that will contain a <code>p</code> tag with <code>id=status-label</code> i.e:</p>
+            <div class="file-snippet">
+				<div class="file-name">File: ~/app/protected.html</div>
+				<div class="file-content">...<br>&lt;p class="mb-4 fs-4 text-lighty" id="status-label"&gt;Loading...&lt;/p&gt;<br>...</div>
+			</div>
+			<p class="p-0 m-0 mb-1 mt-2">Then make a <code>protected.js</code> file in the <code>js</code> dir and link it to <code>protected.html</code> at the end of the body tag.
+			This script will make a request to our <code>auth/session_info.php</code> endpoint, if the request is good it will show some protected session data from the user, otherwise will deny access and not show anything</p>
+			<div class="file-snippet">
+				<div class="file-name">File: ~/app/js/protected.js</div>
+				<div class="file-content">
+					$(document).ready(()=> {<br>
+						&nbsp;$.ajax({<br>
+						&nbsp;&nbsp;type: "GET",<br>
+						&nbsp;&nbsp;url: "api/auth/session_info.php",<br>
+						&nbsp;&nbsp;dataType: "json",<br>
+						&nbsp;&nbsp;encode: true,<br>
+						&nbsp;&nbsp;success: (response)=>{<br>
+							&nbsp;&nbsp;&nbsp;console.log('good')<br>
+							&nbsp;&nbsp;&nbsp;	$('#status-label').text(`Welcome to the private area ${response.nickname}!`)<br>
+							&nbsp;&nbsp;&nbsp;	$('#userid-label').text(`User id: ${response.user_id}`)<br>
+						&nbsp;&nbsp;},<br>
+						&nbsp;&nbsp;error: ()=>{<br>
+							&nbsp;&nbsp;&nbsp;	$('#status-label').text(`You are not logged in!`)<br>
+						&nbsp;&nbsp;}<br>
+					&nbsp;})<br>
+					})
+				</div>
+			</div>
+
+			<p class="p-0 m-0 mb-1 mt-2">There should also be a login form, I'm going to use a bootstrap modal in <code>protected.html</code> for simplicity. The js script that will handle it should look something like this</p>
+			<div class="file-snippet">
+				<div class="file-name">File: ~/app/js/login-form.js</div>
+				<div class="file-content">
+					$(document).ready(()=> {<br>
+						&nbsp;$("#login-form").submit((event)=> {<br>
+							&nbsp;&nbsp;$.ajax({<br>
+								&nbsp;&nbsp;&nbsp;type: "POST",<br>
+								&nbsp;&nbsp;&nbsp;url: "api/auth/login.php",<br>
+								&nbsp;&nbsp;&nbsp;data: { nickname: $("#nickname-input").val(), password: $("#password-input").val() },<br>
+								&nbsp;&nbsp;&nbsp;dataType: "json",<br>
+								&nbsp;&nbsp;&nbsp;encode: true,<br>
+								&nbsp;&nbsp;&nbsp;success: (response)=>{<br>
+									&nbsp;&nbsp;&nbsp;&nbsp;$('#status-label-login').text(`Login good`)<br>
+									&nbsp;&nbsp;&nbsp;&nbsp;location.reload()<br>
+								&nbsp;&nbsp;&nbsp;},<br>
+								&nbsp;&nbsp;&nbsp;error: ()=>{ $('#status-label-login').text(`Login error`) }<br>
+								&nbsp;&nbsp;})<br>
+								&nbsp;event.preventDefault();<br>
+						});<br>
+					});
+				</div>
+			</div>
+
+			<p class="p-0 m-0 mb-1 mt-2">This guide contains the example user we created before, try and use it to login in the private area with nickname <code>coolusername</code>
+			and password <code>a_complex_password</code></p>
+			<a class="btn btn-aws btn-md px-4 gap-3 text-light fw-medium" href="protected.html">Go to the private area</a>
         </div>
     </div>
 
