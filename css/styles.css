@@ -29,6 +29,21 @@ html {
     margin: 0px !important;
 }
 
+
+.file-snippet{
+    margin: 4px;
+    font-family: 'Courier New', Courier, monospace;
+}
+.file-snippet .file-name{
+    padding-left: 4px;
+    background: rgb(123, 0, 255);
+}
+.file-snippet .file-content{
+    padding-left: 8px;
+    background: rgb(41, 21, 61);
+}
+
+
 .side-divider {
     flex-shrink: 0;
     width: 1rem;
