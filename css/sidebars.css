@@ -79,7 +79,7 @@
   margin-top: 0px;
   color: white;
   background-color: #f9fafb;
-  border-radius: 18px 8px 8px 18px;
+  border-radius: 18px 0px 0px 18px;
   opacity: 55%
 }
 
@@ -97,7 +97,7 @@
 #hide-sidebar-button{
   transition: 0.3s;
   background-color: #f9fafb;
-  border-radius: 8px 26px 26px 8px;
+  border-radius: 20px;
   opacity: 55%
 }
 

@@ -20,7 +20,7 @@
         <div id="collapsable-sidebar">
             <div class="flex-shrink-0 p-3">
                 <a class="d-flex align-items-center justify-content-between pb-3 mb-3 gap-2 link-light text-decoration-none border-bottom">
-                    <span class="fs-5 fw-semibold text-light text-nowrap">LAMP on AWS guide</span>
+                    <span class="fs-5 fw-semibold text-light text-nowrap"><span style="color:rgb(83, 223, 255);">LAMP</span> on <span style="color:#f0a441">AWS</span> guide</span>
                     <button type="button" id="hide-sidebar-button" class="btn shadow-sm d-flex justify-content-center p-1 m-0 shadow-sm">
                         <img src="img/arrow-line-left-thin.svg" height="26px"></img>
                     </button>
@@ -78,12 +78,14 @@
                 <p>sudo docker run -d --name lamp -i -t -p "80:80" -v ~/app:/app mattrayner/lamp:latest</p>
             </div>
             <p class="p-0 m-0 mb-0 mt-1">Here we are creating a docker container, detaching from its process with <code>-d</code>, giving it a <code>--name</code> of lamp, exposing it on the port 80 and binding
-                the container's /app dir to a directory with the same that will be created in the user's PWD folder.</p>
+                the container's /app dir to a directory with the same that will be created in the user's PWD folder. <br>
+                The <code>~/app</code> directory is the root folder of the apache+php webserver, in here you can place your css, html, php and js files.</p>
             <p class="p-0 m-0 mb-1 mt-2">To check if the installation worked, check if the container is running with this command</p>
-            <div class="code-snippet">
+            <div class="code-snippet pb-1">
                 <p>sudo docker ps</p>
+                <img src="img/lamp/ssl-3.png" class="img-fluid" alt="">
             </div>
-            <img src="img/lamp/ssl-3.png" class="img-fluid" alt="">
+            
             <p class="p-0 m-0 mb-1 mt-2">Then simply get your EC2 instance's public IP and put it in a browser, you should see something similar</p>
             <img src="img/lamp/ssl-4.png" class="img-fluid" alt="">
             <p class="p-0 m-0 mb-1 mt-2">Let's create an index.php file in the ~/app dir to see if it works</p>
@@ -91,14 +93,13 @@
                 <p>cd ~/app</p>
                 <p>touch index.php</p>
             </div>
-            <p class="p-0 m-0 mb-1 mt-2">Then you can edit the index.php file to show phpinfo(), I'm going to use <code>vi</code>. The file content should look like this.</p>
+            <p class="p-0 m-0 mb-1 mt-2">Then you can edit the index.php file to show phpinfo() with either <code>vi</code>, <code>nano</code> or any other editor you like. The file content should look like this.</p>
             <div class="file-snippet">
                 <div class="file-name">File: ~/app/index.php</div>
                 <div class="file-content">&lt?php phpinfo() ?&gt</div>
             </div>
             <p class="p-0 m-0 mb-1 mt-2">Go to your EC2 instance's public IP and you should see that everything is working!</p>
             <img src="img/lamp/ssl-5.png" class="img-fluid" alt="">
-
 
             <hr><div class="d-flex"><h4 id="section-2.3">2.3 Creating the SSL certificate&nbsp;<h4 class="fst-italic fw-lighter">(optional)</h4></h4></div>
             <p class="p-0 m-0 mb-1 mt-2">We are going to create the /ssl directory containing the ssl key and certificate in the user's home dir, 
@@ -121,8 +122,10 @@
             <p class="p-0 m-0 mb-1 mt-2">And you can see the certificate information</p>
             <img src="img/lamp/ssl-7.png" class="img-fluid" alt="">
 
+
             <hr>
             <h4 id="section-2.4">2.4 Automating the startup</h4>
+            <p class="p-0 m-0 mb-1 mt-2">Now that everything is configured let's create a .sh script to start/restart the lamp and proxy-ssl containers authomatically</p>
             <div class="file-snippet">
                 <div class="file-name">File: ~/run-lamp.sh</div>
                 <div class="file-content"># Start docker<br>
