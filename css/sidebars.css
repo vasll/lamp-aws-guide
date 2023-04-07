@@ -96,9 +96,27 @@
 
 #hide-sidebar-button{
   transition: 0.3s;
-  background-color: #f9fafb;
+  background-color: none;
+  padding: 0px !important;
+  margin: 0px !important;
   border-radius: 8px;
-  opacity: 55%
+  opacity: 100%;
+}
+
+#hide-sidebar-button img{
+  margin: 0px !important;
+  padding: 0px !important;
+  height: 30px;
+  filter: invert(100%) sepia(64%) saturate(1204%) hue-rotate(190deg) brightness(117%) contrast(101%);
+}
+
+#hide-sidebar-button img:hover{
+  filter: invert(0%) sepia(89%) saturate(7500%) hue-rotate(316deg) brightness(106%) contrast(110%);
+}
+
+#hide-sidebar-button:hover{
+  transition: 0.3s;
+  background-color: #f9fafbc4;
 }
 
 #hide-sidebar-button:hover {
