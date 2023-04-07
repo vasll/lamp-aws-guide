@@ -18,6 +18,16 @@ html {
     overflow-y: hidden;
 }
 
+.code-snippet{
+    margin: 4px;
+    font-family: 'Courier New', Courier, monospace;
+    background: #00ffb386;
+}
+.code-snippet p{
+    padding: 0px !important;
+    margin: 0px !important;
+}
+
 .side-divider {
     flex-shrink: 0;
     width: 1rem;

@@ -68,7 +68,7 @@
   transform: rotate(180deg);
   transition: 0.3s;
 
-  left: -16px;
+  left: -22px;
   top: 10px;
   padding:4px;
 
@@ -79,7 +79,7 @@
   margin-top: 0px;
   color: white;
   background-color: #f9fafb;
-  border-radius: 26px 8px 8px 26px;
+  border-radius: 18px 8px 8px 18px;
   opacity: 55%
 }
 
