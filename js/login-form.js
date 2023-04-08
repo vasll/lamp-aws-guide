@@ -7,8 +7,7 @@ $(document).ready(()=> {
             dataType: "json",
             encode: true,
             success: (response)=>{
-                $('#status-label-login').text(`Login good`)
-                location.reload()
+                $('#status-label-login').text(`Login successful!`)
             },
             error: ()=>{ $('#status-label-login').text(`Login error`) }
         })

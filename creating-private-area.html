@@ -63,6 +63,8 @@
                                 <li><a href="creating-private-area.html#section-3.1" class="link-light rounded">3.1 Inserting a user</a></li>
                                 <li><a href="creating-private-area.html#section-3.2" class="link-light rounded">3.2 Creating the API & login</a></li>
                                 <li><a href="creating-private-area.html#section-3.3" class="link-light rounded">3.3 Creating the private area</a></li>
+                                <li><a href="creating-private-area.html#section-3.4" class="link-light rounded">3.4 Logging in</a></li>
+                                <li><a href="creating-private-area.html#section-3.5" class="link-light rounded">3.5 Redirecting to HTTPS</a></li>
                             </ul>
                         </div>
                     </li>
@@ -172,7 +174,7 @@
             </div>
             <p class="p-0 m-0 mb-1 mt-2">Inside <code>/auth</code> we're also going to place a <code>session_info.php</code> file that will return information about the current session</p>
             <div class="file-snippet">
-                <div class="file-name">File: ~/app/api/auth/login.php</div>
+                <div class="file-name">File: ~/app/api/auth/session_info.php</div>
                 <div class="file-content">
                     &lt;?php<br>
                     include('../db_connection.php');<br>
@@ -211,13 +213,13 @@
 						&nbsp;&nbsp;url: "api/auth/session_info.php",<br>
 						&nbsp;&nbsp;dataType: "json",<br>
 						&nbsp;&nbsp;encode: true,<br>
-						&nbsp;&nbsp;success: (response)=>{<br>
-							&nbsp;&nbsp;&nbsp;console.log('good')<br>
-							&nbsp;&nbsp;&nbsp;	$('#status-label').text(`Welcome to the private area ${response.nickname}!`)<br>
-							&nbsp;&nbsp;&nbsp;	$('#userid-label').text(`User id: ${response.user_id}`)<br>
+						&nbsp;&nbsp;success: (response)=>{<br> 
+							&nbsp;&nbsp;&nbsp;	$('#status-label').html(`nickname: ${response.nickname}<br>
+							&nbsp;&nbsp;&nbsp;	user_id: ${response.user_id}<br>
+                            &nbsp;&nbsp;&nbsp;  session_id: ${response.session_id}`)<br>
 						&nbsp;&nbsp;},<br>
 						&nbsp;&nbsp;error: ()=>{<br>
-							&nbsp;&nbsp;&nbsp;	$('#status-label').text(`You are not logged in!`)<br>
+							&nbsp;&nbsp;&nbsp;	window.location.href = 'error.html'<br>
 						&nbsp;&nbsp;}<br>
 					&nbsp;})<br>
 					})
@@ -237,7 +239,7 @@
 								&nbsp;&nbsp;&nbsp;dataType: "json",<br>
 								&nbsp;&nbsp;&nbsp;encode: true,<br>
 								&nbsp;&nbsp;&nbsp;success: (response)=>{<br>
-									&nbsp;&nbsp;&nbsp;&nbsp;$('#status-label-login').text(`Login good`)<br>
+									&nbsp;&nbsp;&nbsp;&nbsp;$('#status-label-login').text(`Login successful`)<br>
 									&nbsp;&nbsp;&nbsp;&nbsp;location.reload()<br>
 								&nbsp;&nbsp;&nbsp;},<br>
 								&nbsp;&nbsp;&nbsp;error: ()=>{ $('#status-label-login').text(`Login error`) }<br>
@@ -248,19 +250,69 @@
 				</div>
 			</div>
 
-			<p class="p-0 m-0 mb-1 mt-2">This guide contains the example user we created before, try and use it to login in the private area with nickname <code>coolusername</code>
-			and password <code>a_complex_password</code></p>
+
+            <hr></hr><h4 id="section-3.4">3.4 Logging in</h4>
+			<p class="p-0 m-0 mb-1 mt-2">This guide contains the example user we created before, try and use it to login with nickname <code>coolusername</code>. 
+                and password <code>a_complex_password</code>
+            </p>
+            <button type="button" class="btn btn-aws btn-md px-4 gap-3 text-light fw-medium" data-bs-toggle="modal" data-bs-target="#login-modal">Login</button>
+            <p class="p-0 m-0 mb-1 mt-2">Now, try and access the private area. If the login is not successful you will be redirected to a generic error page</p>
 			<a class="btn btn-aws btn-md px-4 gap-3 text-light fw-medium" href="protected.html">Go to the private area</a>
+
+
+            <hr></hr><h4 id="section-3.5">3.5 Redirecting to HTTPS</h4>
+            <p class="p-0 m-0 mb-1 mt-2">One last thing that we can add is an HTTP to HTTPS redirect with a <code>https-redirector.js</code> file. This 
+            file will have to be added to each html page in our project</p>
+
+            <div class="file-snippet">
+                <div class="file-name">File: ~/app/js/https-redirector.js</div>
+                <div class="file-content">
+                    if (window.location.protocol == 'http:') {<br>
+                    &nbsp;console.log("HTTP detected | Redirecting to HTTPS...")<br>
+                    &nbsp;window.location.href = window.location.href.replace('http:', 'https:')<br>
+                    }else if(window.location.protocol == "https:") {<br>
+                    &nbsp;console.log("HTTPS detected. Everything is good")<br>
+                    }
+                </div>
+            </div>
+			
+            
         </div>
     </div>
 
-    
+    <!-- LOGIN MODAl-->
+    <div class="modal fade" id="login-modal" tabindex="-1" aria-labelledby="login-modal" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="login-modal-label">Login</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="login-form">
+                        <div class="mb-3">
+                            <label for="nickname" class="form-label">Nickname</label>
+                            <input type="text" class="form-control" id="nickname-input" name="nickname">
+                        </div>
+                        <div class="mb-3">
+                            <label for="password" class="form-label">Password</label>
+                            <input type="password" class="form-control" id="password-input" name="password">
+                        </div>
+                        <p id="status-label-login"></p>
+                        <button type="submit" class="btn btn-primary">Login</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Libraries -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ENjdO4Dr2bkBIFxQpeoTz1HIcje39Wm4jDKdf19U8gI4ddQ3GYNS7NTKfAdVQSZe" crossorigin="anonymous"></script>
     <script src="libraries/jquery-3.6.3.js"></script>
 
     <!-- Custom js -->
     <script src="js/sidebar-collapser.js"></script>
+    <script src="js/login-form.js"></script>
 </body>
 
 </html> 

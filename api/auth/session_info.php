@@ -7,6 +7,7 @@
     if(isset($_SESSION)){
         $response['user_id'] = $_SESSION['user_id'];
         $response['nickname'] = $_SESSION['nickname'];
+        $response['session_id'] = session_id();
         $response['message'] = 'user is logged in';
     }else{
         http_response_code(400);
