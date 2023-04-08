@@ -4,7 +4,7 @@
     $response = [];
     session_start();
 
-    if(isset($_SESSION)){
+    if(isset($_SESSION) && isset($_SESSION['user_id']) && isset($_SESSION['nickname'])){
         $response['user_id'] = $_SESSION['user_id'];
         $response['nickname'] = $_SESSION['nickname'];
         $response['session_id'] = session_id();
