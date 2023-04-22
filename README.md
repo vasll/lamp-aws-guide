@@ -1,4 +1,3 @@
 # LAMP on AWS guide
-
-This is a guide on how to host a LAMP stack on AWS \
-[You can find it hosted here](https://lampguide.vasll.repl.co/index.html)
+[You can find the guide here](https://lampguide.vasll.repl.co/index.html)\
+This is the result of a school project where we had to host a "vanilla" LAMP stack on AWS using docker.
